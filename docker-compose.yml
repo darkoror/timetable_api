@@ -1,0 +1,63 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:13.0-alpine
+    env_file:
+      - .env
+    ports:
+      - 127.0.0.1:5432:5432
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+
+  redis:
+    image: redis:6.0.5
+    hostname: be_3ddua_redis
+    ports:
+      - 127.0.0.1:6379:6379
+    volumes:
+      - redis_data:/data
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: be_3ddua_backend_image
+    hostname: web
+    command: bash -c "./entrypoint.sh; daphne -b 0.0.0.0 -p 8000 BE_3ddua.asgi:application"
+    volumes:
+      - .:/usr/src/app/
+      - logs:/usr/src/app/.data/logs
+      - media:/usr/src/app/media
+      - static:/usr/src/app/static
+    ports:
+      - 127.0.0.1:8000:8000
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+
+  celery:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: gfg_backend_image
+    command: celery -A BE_3ddua worker --loglevel=info -B
+    volumes:
+      - .:/usr/src/app/
+    env_file:
+      - .env
+    depends_on:
+      - web
+      - redis
+      - db
+
+
+volumes:
+  postgres_data:
+  redis_data:
+  logs:
+  media:
+  static:
