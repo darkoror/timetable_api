@@ -6,7 +6,9 @@ from user_profile.managers import UserManager
 
 
 class User(PermissionsMixin, AbstractBaseUser):
-    """Model representing of user"""
+    """
+    Model representing of user
+    """
     email = models.EmailField(max_length=256, unique=True)
     name = models.CharField(max_length=100)
     is_superuser = models.BooleanField(default=False)
