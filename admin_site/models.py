@@ -25,6 +25,8 @@ class University(models.Model):
 
     class Meta:
         db_table = 'universities'
+        verbose_name = 'university'
+        verbose_name_plural = 'universities'
         ordering = ('-id',)
 
     def __str__(self):
@@ -68,7 +70,7 @@ class Group(models.Model):
 
     @property
     def updated_date(self):
-        return self.lessons.all().latest('updated_date').updated_date
+        return self.lessons.all().latest('updated_date').updated_date if self.lessons.exists() else None
 
 
 class Teacher(models.Model):
@@ -88,7 +90,7 @@ class Teacher(models.Model):
         ]
 
     def __str__(self):
-        return f'{self.short_name} - {self.universities}'
+        return f'{self.short_name}'
 
     @property
     def full_name(self):
@@ -100,11 +102,8 @@ class Teacher(models.Model):
 
 
 class Subject(models.Model):
-    """
-    think about relations to university
-    """
     name = models.CharField(max_length=200)
-    university = models.ForeignKey(University, related_name='subjects', on_delete=models.CASCADE)  # ???
+    university = models.ForeignKey(University, related_name='subjects', on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'subjects'
@@ -135,7 +134,7 @@ class AcademyBuilding(models.Model):
         ]
 
     def __str__(self):
-        return f'{self.name} - {self.university}'
+        return f'{self.name} - {self.university.name}'
 
 
 class Auditorium(models.Model):
@@ -153,7 +152,7 @@ class Auditorium(models.Model):
         ]
 
     def __str__(self):
-        return f'{self.name} - {self.academy_building} - {self.academy_building.university.name}'
+        return f'{self.name} - {self.academy_building.name} - {self.academy_building.university.name}'
 
 
 class Lesson(models.Model):
@@ -219,7 +218,7 @@ class Lesson(models.Model):
         null=True,
         help_text='indicates how often the lesson occurs (every week or once in 2 weeks)'
     )
-    additional_info = models.CharField(max_length=70)
+    additional_info = models.CharField(max_length=70, blank=True, null=True)
 
     teachers = models.ManyToManyField(Teacher, related_name='lessons')
     groups = models.ManyToManyField(Group, related_name='lessons')
@@ -235,5 +234,5 @@ class Lesson(models.Model):
 
     def __str__(self):
         return f'{self.lesson_number}. {self.subject.name} - ' \
-               f'{",".join([teacher.name for teacher in self.teachers.all()])} - ' \
-               f'{",".join([teacher.name for teacher in self.groups.all()])}'
+               f'{",".join([teacher.short_name for teacher in self.teachers.all()])} - ' \
+               f'{",".join([group.name for group in self.groups.all()])}'
