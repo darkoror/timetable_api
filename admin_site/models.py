@@ -2,24 +2,34 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 
-class LessonsFrequency:
+class Frequency:
     """
     There are lessons which occur not regular (only once in 2 weeks)
     So the first week we call NUMERATOR (чисельник), and the other DENOMINATOR (знаменник)
     """
 
-    NUMERATOR = 0  # Чисельник
-    DENOMINATOR = 1  # Знаменник
-    WEEK_TYPES = (
+    WEEKLY = 0  # Щотижня
+    NUMERATOR = 1  # Чисельник
+    DENOMINATOR = 2  # Знаменник
+
+    # Used in University model (indicates, type of the week, and according to that what lessons should occur)
+    WEEK_FREQUENCY_TYPES = (
         (NUMERATOR, 'Numerator'),
-        (DENOMINATOR, 'Denominator')
+        (DENOMINATOR, 'Denominator'),
+    )
+
+    # Used in Lesson model (indicates when lesson occurs)
+    LESSON_FREQUENCY = (
+        (WEEKLY, 'Every week'),
+        (NUMERATOR, 'Numerator'),
+        (DENOMINATOR, 'Denominator'),
     )
 
 
 class University(models.Model):
     name = models.CharField(max_length=200, unique=True)
     week_type = models.PositiveSmallIntegerField(
-        choices=LessonsFrequency.WEEK_TYPES,
+        choices=Frequency.WEEK_FREQUENCY_TYPES,
         help_text='indicates what lessons should occur (there are lessons occur once in 2 weeks)'
     )
 
@@ -213,9 +223,8 @@ class Lesson(models.Model):
         null=True,
     )
     frequency = models.PositiveSmallIntegerField(
-        choices=LessonsFrequency.WEEK_TYPES,
-        blank=True,
-        null=True,
+        choices=Frequency.LESSON_FREQUENCY,
+        default=Frequency.WEEKLY,
         help_text='indicates how often the lesson occurs (every week or once in 2 weeks)'
     )
     additional_info = models.CharField(max_length=70, blank=True, null=True)
