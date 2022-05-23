@@ -16,6 +16,7 @@ class ScheduleAPIView(generics.RetrieveAPIView):
             Lesson.objects.filter(groups=self.kwargs.get('group_id'))
             .select_related('subject', 'auditorium__academy_building', 'auditorium')
             .prefetch_related('teachers')
+            .order_by('week_day', 'lesson_number')
         )
 
     def retrieve(self, request, *args, **kwargs):
