@@ -63,7 +63,8 @@ class Department(models.Model):
 
 class Group(models.Model):
     name = models.CharField(max_length=50)
-    department = models.ForeignKey(Department, related_name='groups', on_delete=models.CASCADE)
+    university = models.ForeignKey(University, related_name='groups', on_delete=models.CASCADE)
+    department = models.ForeignKey(Department, related_name='groups', blank=True, null=True, on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'groups'
