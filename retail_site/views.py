@@ -3,13 +3,13 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from admin_site.models import Lesson
-from retail_site.serializers import ScheduleSerializer
+from retail_site.serializers import LessonSerializer
 
 
 class ScheduleAPIView(generics.RetrieveAPIView):
     authentication_classes = []
     permission_classes = [AllowAny]
-    serializer_class = ScheduleSerializer
+    serializer_class = LessonSerializer
 
     def get_queryset(self):
         return (

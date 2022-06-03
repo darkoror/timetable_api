@@ -3,7 +3,7 @@ from rest_framework import serializers
 from admin_site.models import Lesson
 
 
-class ScheduleSerializer(serializers.ModelSerializer):
+class LessonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lesson
         fields = (
