@@ -2,6 +2,7 @@ version: "3.9"
 
 services:
   db:
+    container_name: timetable_postgres
     image: postgres:13.0-alpine
     env_file:
       - .env
@@ -12,20 +13,20 @@ services:
       - postgres_data:/var/lib/postgresql/data/
 
   redis:
+    container_name: timetable_redis
     image: redis:6.0.5
-    hostname: be_3ddua_redis
     ports:
       - 127.0.0.1:6379:6379
     volumes:
       - redis_data:/data
 
-  web:
+  api:
     build:
       context: .
       dockerfile: Dockerfile
-    image: be_3ddua_backend_image
-    hostname: web
-    command: bash -c "./entrypoint.sh; daphne -b 0.0.0.0 -p 8000 BE_3ddua.asgi:application"
+    image: timetable_image
+    container_name: timetable_api
+    command: bash -c "./entrypoint.sh; daphne -b 0.0.0.0 -p 8000 timetable.asgi:application"
     volumes:
       - .:/usr/src/app/
       - logs:/usr/src/app/.data/logs
@@ -43,14 +44,15 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: gfg_backend_image
-    command: celery -A BE_3ddua worker --loglevel=info -B
+    image: timetable_image
+    container_name: timetable_celery
+    command: celery -A timetable worker --loglevel=info -B
     volumes:
       - .:/usr/src/app/
     env_file:
       - .env
     depends_on:
-      - web
+      - api
       - redis
       - db
 
