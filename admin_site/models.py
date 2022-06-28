@@ -246,3 +246,7 @@ class Lesson(models.Model):
         return f'{self.lesson_number}. {self.subject.name} - ' \
                f'{",".join([teacher.short_name for teacher in self.teachers.all()])} - ' \
                f'{",".join([group.name for group in self.groups.all()])}'
+
+    @property
+    def academy_building_id(self):
+        return self.auditorium.academy_building_id
