@@ -3,8 +3,8 @@ from rest_framework import generics
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from admin_site.models import Lesson
-from retail_site.serializers import LessonSerializer
+from admin_site.models import Lesson, Teacher
+from retail_site.serializers import LessonSerializer, TeacherShortSerializer
 
 
 class GroupLessonsAPIView(generics.ListAPIView):
@@ -24,3 +24,12 @@ class GroupLessonsAPIView(generics.ListAPIView):
         data = self.serializer_class(self.get_queryset(), many=True).data
         print(len(connection.queries))
         return Response(data)
+
+
+class GroupTeachersAPIView(generics.ListAPIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+    serializer_class = TeacherShortSerializer
+
+    def get_queryset(self):
+        return Teacher.objects.filter(lessons__groups=self.kwargs.get('group_id'))
