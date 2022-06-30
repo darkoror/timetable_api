@@ -22,7 +22,6 @@ class GroupLessonsAPIView(generics.ListAPIView):
 
     def list(self, request, *args, **kwargs):
         data = self.serializer_class(self.get_queryset(), many=True).data
-        print(len(connection.queries))
         return Response(data)
 
 
@@ -32,7 +31,7 @@ class GroupTeachersAPIView(generics.ListAPIView):
     serializer_class = TeacherShortSerializer
 
     def get_queryset(self):
-        return Teacher.objects.filter(lessons__groups=self.kwargs.get('group_id'))
+        return Teacher.objects.filter(lessons__groups=self.kwargs.get('group_id')).distinct()
 
 
 class GroupSubjectsAPIView(generics.ListAPIView):
@@ -41,4 +40,4 @@ class GroupSubjectsAPIView(generics.ListAPIView):
     serializer_class = SubjectSerializer
 
     def get_queryset(self):
-        return Subject.objects.filter(lessons__groups=self.kwargs.get('group_id'))
+        return Subject.objects.filter(lessons__groups=self.kwargs.get('group_id')).distinct()
