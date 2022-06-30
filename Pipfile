@@ -12,6 +12,7 @@ psycopg2-binary= "*"
 daphne = "*"
 celery = ">=5.2.2"
 redis = "*"
+django-cors-headers = "*"
 
 [dev-packages]
 
