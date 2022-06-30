@@ -17,6 +17,8 @@ from environs import Env
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 env = Env()
+env.read_env()
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
@@ -42,6 +44,10 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'rest_framework_simplejwt',
+
+    'admin_site',
+    'retail_site',
+    'user_profile',
 ]
 
 MIDDLEWARE = [
@@ -79,32 +85,28 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
-    'DEFAULT_RENDERER_CLASSES': (
-        'djangorestframework_camel_case.render.CamelCaseJSONRenderer',
-    ),
-    'DEFAULT_PARSER_CLASSES': (
-        'djangorestframework_camel_case.parser.CamelCaseJSONParser',
-    ),
     'JSON_UNDERSCOREIZE': {
         'no_underscore_before_number': True,
     },
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
     'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.NamespaceVersioning',
-    'DEFAULT_FILTER_BACKENDS': (
-        'django_filters.rest_framework.DjangoFilterBackend',
-    ),
+    # 'DEFAULT_FILTER_BACKENDS': (
+    #     'django_filters.rest_framework.DjangoFilterBackend',
+    # ),
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ]
 }
 
+AUTH_USER_MODEL = 'user_profile.User'
+
 # Simple JWT settings
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': datetime.timedelta(
-        hours=env.int('ACCESS_TOKEN_LIFETIME_HOURS', 0),
-        minutes=env.int('ACCESS_TOKEN_LIFETIME_MINUTES', 20),
+        hours=env.int('ACCESS_TOKEN_LIFETIME_HOURS', 72),
+        minutes=env.int('ACCESS_TOKEN_LIFETIME_MINUTES', 0),
     ),
-    'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=env.int('REFRESH_TOKEN_LIFETIME_DAYS', 7)),
+    'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=env.int('REFRESH_TOKEN_LIFETIME_DAYS', 14)),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': False,
 
@@ -127,11 +129,11 @@ SIMPLE_JWT = {
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': env.str('POSTGRES_DB', ''),
-        'USER': env.str('POSTGRES_USER', ''),
-        'PASSWORD': env.str('POSTGRES_PASSWORD', ''),
-        'HOST': env.str('HOST', ''),
-        'PORT': env.int('PORT', 5432)
+        'NAME': env.str('DB_NAME', ''),
+        'USER': env.str('DB_USER', ''),
+        'PASSWORD': env.str('DB_PASSWORD', ''),
+        'HOST': env.str('DB_HOST', ''),
+        'PORT': env.int('DB_PORT', 5432)
     },
 }
 
@@ -180,9 +182,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static')
-]
 STATIC_ROOT = os.path.join(BASE_DIR, 'assets')
 
 MEDIA_URL = '/media/'
@@ -192,3 +191,82 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# Logging
+DJANGO_LOG_PATH = env.str('DJANGO_LOG_PATH', os.path.join(BASE_DIR, '.data/logs/django.log'))
+DJANGO_LOG_LEVEL = env.str('DJANGO_LOG_LEVEL', 'INFO')
+
+CELERY_LOG_PATH = env.str('CELERY_LOG_PATH', os.path.join(BASE_DIR, '.data/logs/celery.log'))
+CELERY_LOG_LEVEL = env.str('CELERY_LOG_LEVEL', 'INFO')
+
+if not os.path.exists(os.path.dirname(DJANGO_LOG_PATH)):
+    os.makedirs(os.path.dirname(DJANGO_LOG_PATH))
+
+if not os.path.exists(os.path.dirname(CELERY_LOG_PATH)):
+    os.makedirs(os.path.dirname(CELERY_LOG_PATH))
+
+LOGFILE_SIZE = 5 * 1024 * 1024
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s [%(asctime)s] - [%(name)s:%(funcName)s:%(lineno)s] %(message)s',
+        },
+    },
+    'handlers': {
+        'logfile': {
+            'level': 'DEBUG',
+            'formatter': 'verbose',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': DJANGO_LOG_PATH,
+            'maxBytes': LOGFILE_SIZE
+        },
+        'celery_file': {
+            'level': 'DEBUG',
+            'formatter': 'verbose',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': CELERY_LOG_PATH,
+            'maxBytes': LOGFILE_SIZE
+        },
+        'console': {
+            'level': 'DEBUG',
+            'formatter': 'verbose',
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'celery': {
+            'handlers': ['celery_file', 'console'],
+            'propagate': True,
+            'level': env.log_level('CELERY_LOG_LEVEL', CELERY_LOG_LEVEL),
+        },
+        'django': {
+            'handlers': ['logfile', 'console'],
+            'propagate': True,
+            'level': env.log_level('DJANGO_LOG_LEVEL', 'INFO'),
+        },
+    },
+}
+
+# Redis
+REDIS_URL = env('REDIS_URL')
+
+# Celery
+CELERY_BROKER_URL = REDIS_URL
+CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+
+# Docs
+SWAGGER_SETTINGS = {
+    'USE_SESSION_AUTH': False,
+    'SECURITY_DEFINITIONS': {
+        'JWT': {
+            'type': 'apiKey',
+            'in': 'header',
+            'name': 'Authorization'
+        }
+    },
+}
+
