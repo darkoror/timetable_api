@@ -1,7 +1,7 @@
 version: "3.9"
 
 services:
-  db:
+  postgres:
     container_name: timetable_postgres
     image: postgres:13.0-alpine
     env_file:
@@ -37,7 +37,7 @@ services:
     env_file:
       - .env
     depends_on:
-      - db
+      - postgres
       - redis
 
   celery:
@@ -54,7 +54,23 @@ services:
     depends_on:
       - api
       - redis
-      - db
+      - postgres
+
+  nginx:
+    image: nginx:latest
+    container_name: timetable_nginx
+    restart: always
+    ports:
+      - 80:80
+    env_file:
+      - .env
+    volumes:
+      - ./.config:/etc/nginx/conf.d
+      # Bind your static and media folders with Nginx container
+      - ./media:/usr/src/app/media
+      - ./assets:/usr/src/app/assets
+    depends_on:
+      - api
 
 
 volumes:
