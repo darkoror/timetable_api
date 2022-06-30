@@ -9,6 +9,9 @@ environs = "*"
 djangorestframework = "*"
 djangorestframework-simplejwt = "*"
 psycopg2-binary= "*"
+daphne = "*"
+celery = ">=5.2.2"
+redis = "*"
 
 [dev-packages]
 

@@ -241,12 +241,12 @@ LOGGING = {
         'celery': {
             'handlers': ['celery_file', 'console'],
             'propagate': True,
-            'level': env.str('CELERY_LOG_LEVEL', 'INFO'),
+            'level': env.log_level('CELERY_LOG_LEVEL', CELERY_LOG_LEVEL),
         },
         'django': {
             'handlers': ['logfile', 'console'],
             'propagate': True,
-            'level': env.str('DJANGO_LOG_LEVEL', 'INFO'),
+            'level': env.log_level('DJANGO_LOG_LEVEL', 'INFO'),
         },
     },
 }
