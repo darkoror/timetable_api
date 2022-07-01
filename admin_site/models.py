@@ -248,5 +248,5 @@ class Lesson(models.Model):
                f'{",".join([group.name for group in self.groups.all()])}'
 
     @property
-    def academy_building_id(self):
-        return self.auditorium.academy_building_id
+    def academy_building(self):
+        return self.auditorium.academy_building.name

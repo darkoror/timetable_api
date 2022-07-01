@@ -15,7 +15,7 @@ class GroupLessonsAPIView(generics.ListAPIView):
     def get_queryset(self):
         return (
             Lesson.objects.filter(groups=self.kwargs.get('group_id'))
-            .select_related('auditorium')
+            .select_related('auditorium__academy_building')
             .prefetch_related('teachers')
             .order_by('week_day', 'lesson_number')
         )
