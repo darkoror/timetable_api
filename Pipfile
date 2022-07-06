@@ -13,7 +13,6 @@ daphne = "*"
 celery = ">=5.2.2"
 redis = "*"
 django-cors-headers = "*"
-drf-yasg = "*"
 
 [dev-packages]
 
