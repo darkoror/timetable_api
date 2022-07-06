@@ -18,7 +18,7 @@ COPY Pipfile Pipfile.lock /usr/src/app/
 RUN pip install pipenv --no-cache-dir && \
     pipenv install --system --deploy && \
     rm -rf /root/.cache/pipenv && \
-    pip uninstall -y pipen
+    pip uninstall -y pipenv
 
 COPY entrypoint.sh /usr/src/app/entrypoint.sh
 
