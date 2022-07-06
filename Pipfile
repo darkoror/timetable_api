@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-django = {extras = ["argon2"], version = "*"}
+django = {version = "==3.2", extras = ["argon2"]}
 environs = "*"
 djangorestframework = "*"
 djangorestframework-simplejwt = "*"
