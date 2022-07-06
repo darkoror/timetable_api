@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-django = {version = "==3.2", extras = ["argon2"]}
+django = {version = "==4.0.6", extras = ["argon2"]}
 environs = "*"
 djangorestframework = "*"
 djangorestframework-simplejwt = "*"
@@ -13,7 +13,6 @@ daphne = "*"
 celery = ">=5.2.2"
 redis = "*"
 django-cors-headers = "*"
-drf-yasg = "*"
 
 [dev-packages]
 
