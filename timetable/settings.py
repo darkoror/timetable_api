@@ -31,6 +31,15 @@ DEBUG = env.bool('DEBUG', False)
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', ('localhost', '127.0.0.1'))
 
+CORS_ALLOWED_ORIGINS = tuple(
+    [
+        schema + domain.strip()
+        for domain in env.str('CORS_ALLOWED_ORIGINS').split(',')
+        if domain
+        for schema in ['http://', 'https://']
+    ]
+)
+
 
 # Application definition
 
@@ -44,6 +53,7 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'rest_framework_simplejwt',
+    'corsheaders',
 
     'admin_site',
     'retail_site',
@@ -51,6 +61,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
