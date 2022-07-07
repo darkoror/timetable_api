@@ -104,11 +104,11 @@ class Teacher(models.Model):
         return f'{self.short_name}'
 
     @property
-    def full_name(self):
+    def full_name(self) -> str:
         return f'{self.surname} {self.name} {self.patronymic}'
 
     @property
-    def short_name(self):
+    def short_name(self) -> str:
         return f'{self.surname} {self.name[0]}. {self.patronymic[0]}.'
 
 
@@ -248,5 +248,5 @@ class Lesson(models.Model):
                f'{",".join([group.name for group in self.groups.all()])}'
 
     @property
-    def academy_building(self):
+    def academy_building(self) -> str:
         return self.auditorium.academy_building.name
