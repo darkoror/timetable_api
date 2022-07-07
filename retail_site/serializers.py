@@ -31,7 +31,7 @@ class LessonSerializer(serializers.ModelSerializer):
             'additional_info', 'teachers', 'subject_id', 'academy_building', 'auditorium'
         )
 
-    def get_auditorium(self, lesson):
+    def get_auditorium(self, lesson) -> str:
         return lesson.auditorium.name
 
 
