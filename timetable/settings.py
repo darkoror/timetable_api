@@ -40,6 +40,8 @@ CORS_ALLOWED_ORIGINS = tuple(
     ]
 )
 
+CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS')
+
 
 # Application definition
 
