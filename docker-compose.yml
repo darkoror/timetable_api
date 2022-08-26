@@ -56,31 +56,6 @@ services:
       - redis
       - postgres
 
-#  nginx:
-#    image: nginx:latest
-#    container_name: timetable_nginx
-#    restart: always
-#    ports:
-#      - 80:80
-#      - 443:443
-#    env_file:
-#      - .env
-#    volumes:
-#      - ./.config:/etc/nginx/conf.d/:ro
-#      - ./certbot/www:/var/www/certbot/:ro
-#      - ./certbot/conf/:/etc/nginx/ssl/:ro
-#      # Bind your static and media folders with Nginx container
-#      - ./media:/usr/src/app/media
-#      - ./assets:/usr/src/app/assets
-#    depends_on:
-#      - api
-
-#  certbot:
-#    image: certbot/certbot:latest
-#    volumes:
-#      - ./certbot/www/:/var/www/certbot/:rw
-#      - ./certbot/conf/:/etc/letsencrypt/:rw
-
 
 volumes:
   postgres_data:
