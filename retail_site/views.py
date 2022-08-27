@@ -11,7 +11,7 @@ from retail_site.serializers import LessonSerializer, TeacherShortSerializer, Su
 class UniversityAPIView(generics.ListAPIView):
     authentication_classes = []
     permission_classes = [AllowAny]
-    queryset = University.objects.all()
+    queryset = University.objects.exclude(departments__groups__lessons__isnull=True)
     serializer_class = UniversitySerializer
 
 
@@ -22,7 +22,7 @@ class DepartmentAPIView(generics.ListAPIView):
 
     def get_queryset(self):
         university = get_object_or_404(University, id=self.kwargs.get('university_id'))
-        return Department.objects.filter(university=university)
+        return Department.objects.filter(university=university).exclude(groups__lessons__isnull=True)
 
 
 class GroupAPIView(generics.ListAPIView):
@@ -32,7 +32,7 @@ class GroupAPIView(generics.ListAPIView):
 
     def get_queryset(self):
         department = get_object_or_404(Department, id=self.kwargs.get('department_id'))
-        return Group.objects.filter(department=department)
+        return Group.objects.filter(department=department).exclude(lessons__isnull=True)
 
 
 class LessonsAPIView(generics.ListAPIView):
