@@ -83,4 +83,5 @@ jobs:
             docker login ghcr.io -u ${{ secrets.NAMESPACE }} -p ${{ secrets.PERSONAL_ACCESS_TOKEN }}
             docker pull $WEB_IMAGE
             systemctl restart timetable-backend.service
+            systemctl restart nginx
           ENDSSH
