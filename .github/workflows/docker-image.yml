@@ -78,7 +78,7 @@ jobs:
           PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           WEB_IMAGE: ${{ env.WEB_IMAGE }}
         run: |
-          scp -P ${{ secrets.VPS_SSH_PORT }} -o StrictHostKeyChecking=no -r ./.env ./docker-compose.yml root@${{ secrets.VPS_IP_ADDRESS }}:/usr/src/apps/timetable/timetable_api
+          scp -P ${{ secrets.VPS_SSH_PORT }} -o StrictHostKeyChecking=no -r ./docker-compose.yml root@${{ secrets.VPS_IP_ADDRESS }}:/usr/src/apps/timetable/timetable_api
           ssh -o StrictHostKeyChecking=no root@${{ secrets.VPS_IP_ADDRESS }} -p ${{ secrets.VPS_SSH_PORT }} << 'ENDSSH'
             cd /usr/src/apps/timetable/timetable_api
             source .env
