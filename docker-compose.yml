@@ -24,7 +24,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: timetable_image
+    image: ghcr.io/darkoror/timetable_api/web:latest
     container_name: timetable_api
     command: bash -c "./entrypoint.sh; daphne -b 0.0.0.0 -p 8000 timetable.asgi:application"
     volumes:
@@ -44,7 +44,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: timetable_image
+    image: ghcr.io/darkoror/timetable_api/web:latest
     container_name: timetable_celery
     command: celery -A timetable worker --loglevel=info -B
     volumes:
