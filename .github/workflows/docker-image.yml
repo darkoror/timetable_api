@@ -5,6 +5,9 @@ on:
     branches:
       - master
 
+env:
+  WEB_IMAGE: ghcr.io/$(echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]')/web
+
 jobs:
 
   build:
@@ -13,19 +16,22 @@ jobs:
     steps:
       - name: Checkout master
         uses: actions/checkout@v1
+      - name: Set environment variables
+        run: |
+          echo "WEB_IMAGE=$(echo ${{env.WEB_IMAGE}} )" >> $GITHUB_ENV
       - name: Log in to GitHub Packages
         run: echo ${PERSONAL_ACCESS_TOKEN} | docker login ghcr.io -u ${{ secrets.NAMESPACE }} --password-stdin
         env:
           PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-      - name: Pull images
-        run: |
-          docker pull ${{ secrets.API_IMAGE }} || true
+      # - name: Pull images
+      #   run: |
+      #     docker pull ${{ env.WEB_IMAGE }} || true
       - name: Build image
         run: |
-          docker build -f Dockerfile --no-cache -t ${{ secrets.API_IMAGE }} .
+          docker build -f Dockerfile --no-cache -t ${{ env.WEB_IMAGE }} .
       - name: Push images
         run: |
-          docker push ${{ secrets.API_IMAGE }}
+          docker push ${{ env.WEB_IMAGE }}
 
 
   deploy:
@@ -68,13 +74,15 @@ jobs:
           ssh-add - <<< "${{ secrets.SSH_PRIVATE_KEY }}"
       - name: Build and deploy images on VPS
         env:
-          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+          NAMESPACE: ${{ secrets.NAMESPACE }}
+          PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          WEB_IMAGE: ${{ env.WEB_IMAGE }}
         run: |
           scp -P ${{ secrets.VPS_SSH_PORT }} -o StrictHostKeyChecking=no -r ./.env ./docker-compose.yml root@${{ secrets.VPS_IP_ADDRESS }}:/usr/src/apps/timetable/timetable_api
           ssh -o StrictHostKeyChecking=no root@${{ secrets.VPS_IP_ADDRESS }} -p ${{ secrets.VPS_SSH_PORT }} << 'ENDSSH'
             cd /usr/src/apps/timetable/timetable_api
             source .env
-            docker login ghcr.io -u ${{ secrets.NAMESPACE }} -p ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-            docker pull ${{ secrets.API_IMAGE }}
+            docker login ghcr.io -u $NAMESPACE -p $PERSONAL_ACCESS_TOKEN
+            docker pull $WEB_IMAGE
             docker-compose -f docker-compose.yml up -d
           ENDSSH
