@@ -5,9 +5,6 @@ on:
     branches:
       - master
 
-env:
-  WEB_IMAGE: ghcr.io/$(echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]')/web
-
 jobs:
 
   build:
@@ -16,45 +13,19 @@ jobs:
     steps:
       - name: Checkout master
         uses: actions/checkout@v1
-      - name: Add environment variables to .env
-        run: |
-          echo SECRET_KEY=${{ secrets.SECRET_KEY }} >> .env
-          echo DEBUG=${{ secrets.DEBUG }} >> .env
-
-          echo CORS_ALLOWED_ORIGINS=${{ secrets.CORS_ALLOWED_ORIGINS }} >> .env
-          echo CSRF_TRUSTED_ORIGINS=${{ secrets.CSRF_TRUSTED_ORIGINS }} >> .env
-          echo ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }} >> .env
-
-          # Variables to connect to exist db
-          echo DB_NAME=${{ secrets.DB_NAME }} >> .env
-          echo DB_USER=${{ secrets.DB_USER }} >> .env
-          echo DB_PASSWORD=${{ secrets.DB_PASSWORD }} >> .env
-          echo DB_HOST=${{ secrets.DB_HOST }} >> .env
-          echo DB_PORT=${{ secrets.DB_PORT }} >> .env
-
-          # Variables for postgres container (need to create container)
-          # Look 'Environment Variables' topic at https://hub.docker.com/_/postgres
-          echo POSTGRES_DB=${{ secrets.POSTGRES_DB }} >> .env
-          echo POSTGRES_USER=${{ secrets.POSTGRES_USER }} >> .env
-          echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} >> .env
-
-          echo REDIS_URL=${{ secrets.REDIS_URL }} >> .env
-      - name: Set environment variables
-        run: |
-          echo "WEB_IMAGE=$(echo ${{env.WEB_IMAGE}} )" >> $GITHUB_ENV
       - name: Log in to GitHub Packages
         run: echo ${PERSONAL_ACCESS_TOKEN} | docker login ghcr.io -u ${{ secrets.NAMESPACE }} --password-stdin
         env:
           PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
       - name: Pull images
         run: |
-          docker pull ${{ env.WEB_IMAGE }} || true
+          docker pull ${{ secrets.API_IMAGE }} || true
       - name: Build image
         run: |
-          docker build -f Dockerfile --no-cache -t ${{ env.WEB_IMAGE }} .
+          docker build -f Dockerfile --no-cache -t ${{ secrets.API_IMAGE }} .
       - name: Push images
         run: |
-          docker push ${{ env.WEB_IMAGE }}
+          docker push ${{ secrets.API_IMAGE }}
 
 
   deploy:
@@ -64,34 +35,29 @@ jobs:
     steps:
       - name: Checkout master
         uses: actions/checkout@v1
-      - name: Add environment variables to .env
-        run: |
-          echo SECRET_KEY=${{ secrets.SECRET_KEY }} >> .env
-          echo DEBUG=${{ secrets.DEBUG }} >> .env
+      # - name: Add environment variables to .env
+      #   run: |
+      #     echo SECRET_KEY=${{ secrets.SECRET_KEY }} >> .env
+      #     echo DEBUG=${{ secrets.DEBUG }} >> .env
   
-          echo CORS_ALLOWED_ORIGINS=${{ secrets.CORS_ALLOWED_ORIGINS }} >> .env
-          echo CSRF_TRUSTED_ORIGINS=${{ secrets.CSRF_TRUSTED_ORIGINS }} >> .env
-          echo ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }} >> .env
+      #     echo CORS_ALLOWED_ORIGINS=${{ secrets.CORS_ALLOWED_ORIGINS }} >> .env
+      #     echo CSRF_TRUSTED_ORIGINS=${{ secrets.CSRF_TRUSTED_ORIGINS }} >> .env
+      #     echo ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }} >> .env
   
-          # Variables to connect to exist db
-          echo DB_NAME=${{ secrets.DB_NAME }} >> .env
-          echo DB_USER=${{ secrets.DB_USER }} >> .env
-          echo DB_PASSWORD=${{ secrets.DB_PASSWORD }} >> .env
-          echo DB_HOST=${{ secrets.DB_HOST }} >> .env
-          echo DB_PORT=${{ secrets.DB_PORT }} >> .env
+      #     # Variables to connect to exist db
+      #     echo DB_NAME=${{ secrets.DB_NAME }} >> .env
+      #     echo DB_USER=${{ secrets.DB_USER }} >> .env
+      #     echo DB_PASSWORD=${{ secrets.DB_PASSWORD }} >> .env
+      #     echo DB_HOST=${{ secrets.DB_HOST }} >> .env
+      #     echo DB_PORT=${{ secrets.DB_PORT }} >> .env
   
-          # Variables for postgres container (need to create container)
-          # Look 'Environment Variables' topic at https://hub.docker.com/_/postgres
-          echo POSTGRES_DB=${{ secrets.POSTGRES_DB }} >> .env
-          echo POSTGRES_USER=${{ secrets.POSTGRES_USER }} >> .env
-          echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} >> .env
+      #     # Variables for postgres container (need to create container)
+      #     # Look 'Environment Variables' topic at https://hub.docker.com/_/postgres
+      #     echo POSTGRES_DB=${{ secrets.POSTGRES_DB }} >> .env
+      #     echo POSTGRES_USER=${{ secrets.POSTGRES_USER }} >> .env
+      #     echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} >> .env
   
-          echo REDIS_URL=${{ secrets.REDIS_URL }} >> .env
-          
-          # Deploy variables
-          echo WEB_IMAGE=${{ env.WEB_IMAGE }} >> .env
-          echo NAMESPACE=${{ secrets.NAMESPACE }} >> .env
-          echo PERSONAL_ACCESS_TOKEN=${{ secrets.PERSONAL_ACCESS_TOKEN }} >> .env
+      #     echo REDIS_URL=${{ secrets.REDIS_URL }} >> .env
       - name: Add the private SSH key to the ssh-agent
         env:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
@@ -108,7 +74,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no root@${{ secrets.VPS_IP_ADDRESS }} -p ${{ secrets.VPS_SSH_PORT }} << 'ENDSSH'
             cd /usr/src/apps/timetable/timetable_api
             source .env
-            docker login ghcr.io -u $NAMESPACE -p $PERSONAL_ACCESS_TOKEN
-            docker pull $WEB_IMAGE
+            docker login ghcr.io -u ${{ secrets.NAMESPACE }} -p ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+            docker pull ${{ secrets.API_IMAGE }}
             docker-compose -f docker-compose.yml up -d
           ENDSSH
